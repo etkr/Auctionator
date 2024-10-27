@@ -2,6 +2,8 @@
 -- The button will be hidden when the AH is closed.
 -- The total price is shown in a FontString next to the button
 local addedFunctionality = false
+local MIXOLOGIST = true
+
 function Auctionator.CraftingInfo.Initialize()
   if addedFunctionality then
     return
@@ -121,6 +123,9 @@ local function GetAHProfit()
 
   local recipeLink =  GetTradeSkillItemLink(recipeIndex)
   local count = GetTradeSkillNumMade(recipeIndex)
+  if MIXOLOGIST then
+    count = count * 2
+  end
 
   if recipeLink == nil or recipeLink:match("enchant:") then
     return nil
