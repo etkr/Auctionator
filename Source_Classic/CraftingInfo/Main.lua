@@ -2,7 +2,7 @@
 -- The button will be hidden when the AH is closed.
 -- The total price is shown in a FontString next to the button
 local addedFunctionality = false
-local MIXOLOGIST = true
+local MIXOLOGIST = 82090
 
 function Auctionator.CraftingInfo.Initialize()
   if addedFunctionality then
@@ -11,7 +11,7 @@ function Auctionator.CraftingInfo.Initialize()
 
   if TradeSkillFrame then
     addedFunctionality = true
-    CreateFrame("Frame", "AuctionatorCraftingInfo", TradeSkillFrame, "AuctionatorCraftingInfoFrameTemplate");
+   CreateFrame("Frame", "AuctionatorCraftingInfo", TradeSkillFrame, "AuctionatorCraftingInfoFrameTemplate");
   end
 end
 
@@ -112,6 +112,14 @@ local function GetEnchantProfit()
   local exact = Auctionator.API.v1.IsAuctionDataExactByItemID(AUCTIONATOR_L_REAGENT_SEARCH, data.itemID)
 
   return math.floor(currentAH * Auctionator.Constants.AfterAHCut - vellumCost - toCraft), age, currentAH ~= 0, exact
+end
+
+local function IsMixologist()
+  quests = GetQuestsCompleted()
+  if quests[MIXOLOGIST] == "TRUE" then
+    return true
+  end
+  return false
 end
 
 local function GetAHProfit()
