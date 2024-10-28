@@ -2,6 +2,16 @@
 -- The button will be hidden when the AH is closed.
 -- The total price is shown in a FontString next to the button
 local addedFunctionality = false
+local MIXOLOGY_BONUS = 2.1
+local mixology_enabled = false
+
+local function CheckIfMixologyIsEnabled()
+  questsCompleted = GetQuestsCompleted()
+  if questsCompleted[82090] == true then
+    mixology_enabled = true
+  end
+end
+
 function Auctionator.CraftingInfo.Initialize()
   if addedFunctionality then
     return
@@ -10,6 +20,7 @@ function Auctionator.CraftingInfo.Initialize()
   if TradeSkillFrame then
     addedFunctionality = true
     CreateFrame("Frame", "AuctionatorCraftingInfo", TradeSkillFrame, "AuctionatorCraftingInfoFrameTemplate");
+    CheckIfMixologyIsEnabled()
   end
 end
 
@@ -112,6 +123,19 @@ local function GetEnchantProfit()
   return math.floor(currentAH * Auctionator.Constants.AfterAHCut - vellumCost - toCraft), age, currentAH ~= 0, exact
 end
 
+local banList = {
+  [3824] = true, -- Shadow Oil
+  [3829] = true, -- Frost Oil
+}
+
+local function IsMixologable(itemLink)
+  local itemID, _, _, _, _, classID, subclassID = C_Item.GetItemInfoInstant(itemLink)
+
+  -- Thers a bug in the API where subclassID is 0 for consumables
+  -- https://github.com/Stanzilla/WoWUIBugs/issues/218
+  return classID == Enum.ItemClass.Consumable and subclassID == 0 and not banList[itemID]
+end
+
 local function GetAHProfit()
   local recipeIndex = GetTradeSkillSelectionIndex()
 
@@ -134,7 +158,14 @@ local function GetAHProfit()
   local exact = Auctionator.API.v1.IsAuctionDataExactByItemLink(AUCTIONATOR_L_REAGENT_SEARCH, recipeLink)
   local toCraft = GetSkillReagentsTotal()
 
-  return math.floor(currentAH * count * Auctionator.Constants.AfterAHCut - toCraft), age, currentAH ~= 0, exact
+  local mixologyBonus = 1
+  if mixology_enabled and IsMixologable(recipeLink) then
+    mixologyBonus = MIXOLOGY_BONUS
+    Auctionator.Debug.Message("Mixology bonus applied")
+  end
+
+  return math.floor(currentAH * count * mixologyBonus * Auctionator.Constants.AfterAHCut - toCraft), age, currentAH ~= 0,
+      exact
 end
 
 local function CraftCostString()
